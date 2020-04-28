@@ -16,17 +16,36 @@ const Deck = ({data, renderCard}) => {
     onPanResponderRelease: () => {}
   })
   const [panResponderState, setPanResponderState] = useState(panResponder)
+
+  function getCardStyle() {
+    const rotate = position.x.interpolate({
+      inputRange: [-500, 0 , 500],
+      outputRange: ['-120deg', '0deg', '120deg']
+    })
+    return {
+      ...position.getLayout(),
+      transform: [{rotate}]
+    }
+  }
   const renderCards = () => {
-    return data.map(item => {
+    return data.map((item, index) => {
+      if(index === 0) {
+        return (
+          <Animated.View
+            key={item.id}
+            style={getCardStyle()}
+            {...panResponderState.panHandlers}>
+            {renderCard(item)}
+          </Animated.View>
+        )
+      }
       return renderCard(item)
     })
   }
  return (
-    <Animated.View
-      style={position.getLayout()}
-      {...panResponderState.panHandlers}>
+    <View>
       {renderCards()}
-    </Animated.View>
+    </View>
   )
 }
 
