@@ -1,17 +1,18 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
-  Text,
   View,
   Animated,
   PanResponder,
-  Dimensions
+  Dimensions,
+  LayoutAnimation,
+  UIManager
  } from 'react-native';
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25;
 const SWIPE_OUT_DURATION = 250;
 
-const Deck = ({data, renderCard, onSwipeLeft, onSwipeRight}) => {
+const Deck = ({data, renderCard, onSwipeLeft, onSwipeRight, renderNoMoreCards}) => {
   const position = new Animated.ValueXY()
 
   const panResponder = PanResponder.create({
@@ -29,6 +30,22 @@ const Deck = ({data, renderCard, onSwipeLeft, onSwipeRight}) => {
     }
   })
   const [index, setIndex] = useState(0)
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    if(data) {
+      setIndex(0)
+    }
+  }, [data])
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true)
+    LayoutAnimation.spring()
+  });
 
   const getCardStyle = () => {
     const rotate = position.x.interpolate({
@@ -55,33 +72,49 @@ const Deck = ({data, renderCard, onSwipeLeft, onSwipeRight}) => {
     position.setValue({x:0, y:0})
     direction === 'right' ? onSwipeRight(item) : onSwipeLeft(item)
   }
+
   const resetPosition = () => {
     Animated.spring(position, {
       toValue: {x: 0, y: 0}
     }).start()
   }
   const renderCards = () => {
+    if (index >= data.length) return renderNoMoreCards()
     return data.map((item, i) => {
-      if(i < index) return null
-      if(i === index) {
+      if (i < index) return null
+      if (i === index) {
         return (
           <Animated.View
             key={item.id}
-            style={getCardStyle()}
+            style={[getCardStyle(), styles.cardStyle, { zIndex: 99 }]}
             {...panResponder.panHandlers}>
             {renderCard(item)}
           </Animated.View>
 
         )
       }
-      return renderCard(item)
-    })
+      return (
+        <Animated.View
+          key={item.id}
+          style={[styles.cardStyle, {top: 10 * (i - index), zIndex: 5}]}
+          >
+          {renderCard(item)}
+        </Animated.View>
+      )
+    }).reverse()
   }
  return (
     <View>
       {renderCards()}
     </View>
   )
+}
+
+const styles = {
+  cardStyle: {
+    position: 'absolute',
+    width: SCREEN_WIDTH
+  }
 }
 
 export default Deck;

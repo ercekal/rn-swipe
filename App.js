@@ -33,10 +33,22 @@ export default function App() {
       </Card>
     )
   }
+  function renderNoMoreCards() {
+    return (
+      <Card title='All done!'>
+        <Text style={{marginBottom: 10}}>No more cards</Text>
+        <Button
+          backgroundColor='#03A9F4'
+          title='Get more!'
+        />
+      </Card>
+    )
+  }
   return (
     <View style={styles.container}>
       <Deck
         data={DATA}
+        renderNoMoreCards={renderNoMoreCards}
         renderCard={renderCard}
         onSwipeLeft={() => console.log('swiped left')}
         onSwipeRight={() => console.log('swiped Right')}
@@ -49,5 +61,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    top: 20
   },
 });
