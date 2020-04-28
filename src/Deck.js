@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   Text,
   View,
@@ -13,6 +13,7 @@ const SWIPE_OUT_DURATION = 250;
 
 const Deck = ({data, renderCard, onSwipeLeft, onSwipeRight}) => {
   const position = new Animated.ValueXY()
+
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onPanResponderMove: (event, gesture) => {
@@ -27,7 +28,7 @@ const Deck = ({data, renderCard, onSwipeLeft, onSwipeRight}) => {
       return resetPosition()
     }
   })
-  const [panResponderState, setPanResponderState] = useState(panResponder)
+  const [index, setIndex] = useState(0)
 
   const getCardStyle = () => {
     const rotate = position.x.interpolate({
@@ -49,7 +50,10 @@ const Deck = ({data, renderCard, onSwipeLeft, onSwipeRight}) => {
   }
 
   function onSwipeComplete(direction) {
-    direction === 'right' ? onSwipeRight() : onSwipeLeft()
+    const item = data[index]
+    setIndex(index + 1)
+    position.setValue({x:0, y:0})
+    direction === 'right' ? onSwipeRight(item) : onSwipeLeft(item)
   }
   const resetPosition = () => {
     Animated.spring(position, {
@@ -57,15 +61,17 @@ const Deck = ({data, renderCard, onSwipeLeft, onSwipeRight}) => {
     }).start()
   }
   const renderCards = () => {
-    return data.map((item, index) => {
-      if(index === 0) {
+    return data.map((item, i) => {
+      if(i < index) return null
+      if(i === index) {
         return (
           <Animated.View
             key={item.id}
             style={getCardStyle()}
-            {...panResponderState.panHandlers}>
+            {...panResponder.panHandlers}>
             {renderCard(item)}
           </Animated.View>
+
         )
       }
       return renderCard(item)

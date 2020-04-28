@@ -38,6 +38,8 @@ export default function App() {
       <Deck
         data={DATA}
         renderCard={renderCard}
+        onSwipeLeft={() => console.log('swiped left')}
+        onSwipeRight={() => console.log('swiped Right')}
         />
     </View>
   );
